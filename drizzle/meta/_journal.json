@@ -15,6 +15,20 @@
       "when": 1790439116790,
       "tag": "0001_uneven_nitro",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1790443903795,
+      "tag": "0002_burly_longshot",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1790444207080,
+      "tag": "0003_complex_slapstick",
+      "breakpoints": true
     }
   ]
 }
