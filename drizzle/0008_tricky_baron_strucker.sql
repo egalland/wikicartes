@@ -1,0 +1,1 @@
+CREATE INDEX `idx_wiki_articles_job_cursor` ON `wiki_articles` (`job_id`,`id`);

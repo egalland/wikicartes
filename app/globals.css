@@ -102,4 +102,7 @@
 .wiki-status{font-size:.75rem;border-radius:100px;padding:4px 8px;background:#ffffff12}
 .wiki-status.done{color:#9be5bb;background:#56b87822}.wiki-status.error{color:#ffb0a8;background:#ca5d5122}
 .wiki-import-panel .filters{flex-wrap:wrap}.wiki-import-panel .filters input[type=number]{max-width:160px}.wiki-import-panel .filters select{min-width:175px}
+.wiki-bulk-panel{margin:22px 0;padding:18px;border:1px solid #d0ae674d;border-radius:14px;background:#d0ae670b}
+.wiki-bulk-panel h3{margin:0 0 7px;color:#ecd9aa}.wiki-bulk-panel p{margin:0 0 14px;line-height:1.5}
+.wiki-status.no_image{color:#bbb2a5;background:#ffffff10}
 @media(max-width:760px){.wiki-import-summary{grid-template-columns:repeat(2,1fr)}.wiki-import-summary span:first-child{grid-column:1/-1}.wiki-actions button,.wiki-bulk-actions button{flex:1}.wiki-import-panel .filters>*{width:100%;max-width:none!important}}
