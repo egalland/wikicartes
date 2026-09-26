@@ -90,3 +90,16 @@
 .catalog-table td:first-child input{accent-color:#e6c27c}
 @media(max-width:650px){.catalog-toolbar>*{flex:1 1 auto}.catalog-toolbar .outline-button:last-child{width:100%}.import-console-lines{height:170px}}
 @media(prefers-reduced-motion:reduce){.console-light.running{animation:none}}
+/* Atlas V7 — CSV pipeline */
+.wiki-import-panel{margin-top:22px}
+.wiki-import-summary{display:grid;grid-template-columns:minmax(200px,2fr) repeat(4,1fr);gap:10px;margin:18px 0}
+.wiki-import-summary span{display:grid;gap:4px;padding:12px;background:#ffffff08;border:1px solid #ffffff1d;border-radius:10px}
+.wiki-import-summary small{color:#9fb0bf;font-size:.75rem}
+.wiki-progress{height:28px;border:1px solid #ffffff28;border-radius:9px;background:#0d1826;position:relative;overflow:hidden;margin:12px 0}
+.wiki-progress>div{height:100%;background:linear-gradient(90deg,#b99551,#e7c985);transition:width .2s}
+.wiki-progress span{position:absolute;inset:0;display:grid;place-items:center;font-size:.78rem;font-weight:700;color:#f7ebce}
+.wiki-actions,.wiki-bulk-actions{display:flex;gap:9px;flex-wrap:wrap;margin:10px 0 18px}
+.wiki-status{font-size:.75rem;border-radius:100px;padding:4px 8px;background:#ffffff12}
+.wiki-status.done{color:#9be5bb;background:#56b87822}.wiki-status.error{color:#ffb0a8;background:#ca5d5122}
+.wiki-import-panel .filters{flex-wrap:wrap}.wiki-import-panel .filters input[type=number]{max-width:160px}.wiki-import-panel .filters select{min-width:175px}
+@media(max-width:760px){.wiki-import-summary{grid-template-columns:repeat(2,1fr)}.wiki-import-summary span:first-child{grid-column:1/-1}.wiki-actions button,.wiki-bulk-actions button{flex:1}.wiki-import-panel .filters>*{width:100%;max-width:none!important}}

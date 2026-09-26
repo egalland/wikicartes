@@ -1,0 +1,12 @@
+import { readFile } from 'node:fs/promises';
+const file = await readFile(new URL('../test-fixtures/wiki-small.csv', import.meta.url), 'utf8');
+const lines = file.trim().split(String.fromCharCode(10));
+const headers = lines.shift().split(',');
+const required = ['project','page_id','title','views_period','period_start','period_end','wikipedia_url','api_url'];
+if (required.some((name) => !headers.includes(name))) throw new Error('missing header');
+const rows = lines.map((line) => Object.fromEntries(line.split(',').map((value, i) => [headers[i], value])));
+const ids = rows.map((row) => row.page_id || row.title.trim().toLocaleLowerCase('fr-FR'));
+const duplicateCount = ids.length - new Set(ids).size;
+const valid = rows.filter((row) => row.project === 'frwiki' && Number(row.views_period) >= 100 && row.wikipedia_url.startsWith('https://fr.wikipedia.org/wiki/') && row.api_url.startsWith('https://fr.wikipedia.org/w/api.php'));
+if (rows.length !== 3 || duplicateCount !== 1 || valid.length !== 3) throw new Error('fixture assertion failed');
+console.log(JSON.stringify({ rows: rows.length, duplicateCount, valid: valid.length, fallbackId: ids[1] }));
