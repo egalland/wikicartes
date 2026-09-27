@@ -1,13 +1,4 @@
-const rules:[string,RegExp][]=[
- ['cinema',/cinéma|film|réalisat|acteu|actric|télévision|série télévisée/i],
- ['astronomie',/astronomi|planète|étoile|galaxie|constellation|cosmolog/i],
- ['astrologie',/astrolog|zodiaque|horoscope/i],
- ['politique',/politique|président|ministre|député|élection|parti politique/i],
- ['histoire',/histoire|siècle|guerre|empire|archéolog|monarchie/i],
- ['nature',/animal|végétal|botani|écologi|espèce|géograph|montagne|fleuve/i],
- ['sciences',/science|physique|chimie|mathémati|médecine|technolog|informatique/i],
- ['arts',/artiste|peintre|musique|littérature|écrivain|architecture|musée/i]
-];
+import {classifyCardFamily} from './card-family';
 
 async function wiki(params:Record<string,string>){
  const url=new URL('https://fr.wikipedia.org/w/api.php');
@@ -46,7 +37,7 @@ export async function importBatch(db:D1Database,minMonthlyViews=100){
   for(const page of pages){
    if(!page.pageid)continue;
    const category=(page.categories||[]).map((x:any)=>String(x.title||'').replace(/^Catégorie:/,'')).join(' · ').slice(0,240);
-   const family=rules.find(([,rx])=>rx.test(category))?.[0]||'decouvertes';
+   const family=classifyCardFamily(category);
    const info=filesMap.get(String(page.pageimage||'').replaceAll('_',' '));
    const meta=info?.extmetadata||{},license=String(meta.LicenseShortName?.value||''),licenseUrl=String(meta.LicenseUrl?.value||'');
    const isFree=/CC[ -](?:BY|0)|public domain|domaine public|PD-/i.test(license)||/creativecommons.org\/(?:licenses|publicdomain)\//i.test(licenseUrl);
@@ -61,7 +52,7 @@ export async function importBatch(db:D1Database,minMonthlyViews=100){
    statements.push(db.prepare('INSERT INTO import_records(page_id,title,category,family,status,reason,checked_at) VALUES (?,?,?,?,?,?,?) ON CONFLICT(page_id) DO UPDATE SET title=excluded.title,category=excluded.category,family=excluded.family,status=excluded.status,reason=excluded.reason,checked_at=excluded.checked_at').bind(page.pageid,page.title,category,family,valid?'eligible':'rejected',reason,stamp));
    if(valid&&!existing?.retired){
     const author=String(meta.Artist?.value||'').replace(/<[^>]*>/g,'').slice(0,160);
-    statements.push(db.prepare('INSERT INTO cards(id,title,family,category,image,excerpt,views,url,author,license,license_url,file_url) VALUES (?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET title=excluded.title,category=excluded.category,image=excluded.image,excerpt=excluded.excerpt,views=excluded.views,url=excluded.url,author=excluded.author,license=excluded.license,license_url=excluded.license_url,file_url=excluded.file_url').bind(page.pageid,page.title,family,category,page.thumbnail.source,page.extract||'',observations.length?views:existing?.views??0,'https://fr.wikipedia.org/wiki/'+encodeURIComponent(page.title.replaceAll(' ','_')),author,license,licenseUrl,info.descriptionurl||''));
+    statements.push(db.prepare('INSERT INTO cards(id,title,family,category,image,excerpt,views,url,author,license,license_url,file_url) VALUES (?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET title=excluded.title,family=excluded.family,category=excluded.category,image=excluded.image,excerpt=excluded.excerpt,views=excluded.views,url=excluded.url,author=excluded.author,license=excluded.license,license_url=excluded.license_url,file_url=excluded.file_url').bind(page.pageid,page.title,family,category,page.thumbnail.source,page.extract||'',observations.length?views:existing?.views??0,'https://fr.wikipedia.org/wiki/'+encodeURIComponent(page.title.replaceAll(' ','_')),author,license,licenseUrl,info.descriptionurl||''));
    }
   }
   if(statements.length)await db.batch(statements);
