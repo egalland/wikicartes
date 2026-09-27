@@ -6,7 +6,7 @@ import {importBatch} from '@/lib/wiki-import';
 import {classifyCardFamily} from '@/lib/card-family';
 export const dynamic = 'force-dynamic';
 const ADMIN_EMAIL=String((env as unknown as {WIKICARTES_ADMIN_EMAIL?:string}).WIKICARTES_ADMIN_EMAIL||'').trim().toLowerCase();
-const NAMES:Record<string,string>={cinema:'Cinéma',astronomie:'Astronomie',histoire:'Histoire',nature:'Nature',politique:'Politique',sciences:'Sciences',arts:'Arts & culture',astrologie:'Astrologie'};
+const NAMES:Record<string,string>={cinema:'Cinéma',astronomie:'Astronomie',histoire:'Histoire',nature:'Nature',politique:'Politique',sciences:'Sciences',arts:'Arts & culture',astrologie:'Astrologie',gastronomie:'Gastronomie'};
 const DEFAULT={packSize:5,cooldown:10,listingFeePercent:5,premiumPackSize:3,premiumPackPrice:25,premiumMinRarity:3,maxStandardPacks:10,premiumXp:10,plusChancePercent:5,minMonthlyViews:100,rewards:{pack_1:5,pack_10:20,pack_100:150,cards_100:50,cards_1000:500,legend_1:25,legend_10:100,collection_50:25,trades_5:30,fortune_100:10,family_1:30} as Record<string,number>,thresholds:[1000,4000,15000,60000,110000],weights:[45,28,16,8,2.5,.5],discard:[1,2,3,5,10,15]};
 type Cfg=typeof DEFAULT;type User={userId:string,email:string,displayName:string};
 const db=()=>env.DB as D1Database;
@@ -18,6 +18,7 @@ async function run(sql:string,...params:unknown[]){return db().prepare(sql).bind
 function admin(u:User|null){return u?.email.toLowerCase()===ADMIN_EMAIL}
 function asCfg(s:string|null):Cfg{try{const x=JSON.parse(s||'{}');return {...DEFAULT,...x}}catch{return {...DEFAULT}}}
 async function ensure(){const first=await one<{value:string}>('SELECT value FROM config WHERE key=?','game');if(!first){await run('INSERT OR IGNORE INTO config(key,value) VALUES (?,?)','game',JSON.stringify(DEFAULT));await db().batch(Object.entries(NAMES).map(([slug,name])=>db().prepare('INSERT OR IGNORE INTO families(slug,name,category,enabled) VALUES (?,?,?,1)').bind(slug,name,null)));}
+const foodFamily=await one<{slug:string}>('SELECT slug FROM families WHERE slug=?','gastronomie');if(!foodFamily)await run('INSERT OR IGNORE INTO families(slug,name,category,enabled) VALUES (?,?,?,1)','gastronomie','Gastronomie',null);
 const reset=await one<{value:string}>('SELECT value FROM config WHERE key=?','v6_reset_completed');if(!reset){await db().batch([
   ...['bids','notifications','trades','showcase','discoveries','reward_claims','friendships','sales','listings','inventory','flags','import_records','cards'].map(table=>db().prepare('DELETE FROM '+table)),
   db().prepare('UPDATE users SET balance=0,peak_balance=0,xp=0,opened_count=0,pack_count=0,legendary_opened=0,last_pack_at=0,standard_packs=1,standard_next_at=0,premium_packs=0,login_day=NULL,login_streak=0,test_mode=0'),
@@ -161,9 +162,9 @@ if(action==='reclassifyCards'){
  if(!admin(user))return err('Accès administrateur requis.',403);
  const after=Number(body.after??0);
  if(!Number.isSafeInteger(after)||after<0)return err('Curseur invalide.');
- const cards=await q<{id:number,category:string}>('SELECT id,category FROM cards WHERE family=? AND retired=0 AND id>? ORDER BY id LIMIT 200','decouvertes',after);
- const changed=cards.map(card=>({id:card.id,family:classifyCardFamily(card.category)})).filter(card=>card.family!=='decouvertes');
- if(changed.length)await db().batch(changed.map(card=>db().prepare('UPDATE cards SET family=? WHERE id=? AND family=?').bind(card.family,card.id,'decouvertes')));
+ const cards=await q<{id:number,category:string,family:string}>('SELECT id,category,family FROM cards WHERE retired=0 AND id>? ORDER BY id LIMIT 200',after);
+ const changed=cards.map(card=>({id:card.id,previous:card.family,family:classifyCardFamily(card.category)})).filter(card=>card.family!==card.previous);
+ if(changed.length)await db().batch(changed.map(card=>db().prepare('UPDATE cards SET family=? WHERE id=? AND family=?').bind(card.family,card.id,card.previous)));
  return ok({processed:cards.length,updated:changed.length,after:cards.at(-1)?.id??after,hasMore:cards.length===200});
 }
 if(action==='wikiImportBatch'){
