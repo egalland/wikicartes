@@ -1,0 +1,48 @@
+/* Optical layers: iridescent foil, fine grain, and a separate pointer glare. */
+.atlas-card{--pointer-x:50%;--pointer-y:50%;--foil-x:50%;--foil-y:50%;--foil-x-inverse:50%;--foil-y-inverse:50%;--light-presence:0;--foil-strength:0;--glare-strength:.3}
+.atlas-card .card-turn{transition:none}
+.atlas-card:focus-visible{outline:2px solid #e4c27d;outline-offset:7px;border-radius:18px}
+.atlas-card .card-front{isolation:isolate}
+.card-shine,.card-diffraction,.card-glare,.card-sparkles{position:absolute;inset:0;border-radius:inherit;pointer-events:none;backface-visibility:hidden}
+.card-shine,.card-diffraction,.card-sparkles{z-index:2;opacity:calc(var(--light-presence)*var(--foil-strength))}
+.card-shine{
+ opacity:calc(var(--light-presence)*var(--foil-strength)*.64);
+ background-image:url('/textures/holo-grain.svg'),
+  repeating-linear-gradient(0deg,#f071c1 0%,#99c7f7 16%,#68dcc4 32%,#f0dd91 48%,#ea8d9f 64%,#b19bdc 80%,#f071c1 100%),
+  linear-gradient(128deg,#3c4858 5%,#b4c1d4 22%,#566078 34%,#b7c8da 45%,#56667e 58%,#a8b8ca 78%,#3c4858 100%);
+ background-size:140px 140px,220% 420%,280% 280%;
+ background-position:center,var(--foil-x) var(--foil-y),var(--foil-x-inverse) var(--foil-y-inverse);
+ background-blend-mode:soft-light,hue,normal;
+ mix-blend-mode:hard-light;
+ filter:brightness(.95) contrast(1.45) saturate(1.4);
+ mask-image:radial-gradient(ellipse farthest-corner at var(--pointer-x) var(--pointer-y),#000 0%,#000e 30%,#0006 63%,#0000 100%);
+}
+.card-shine:after{content:'';position:absolute;inset:0;border-radius:inherit;
+ background-image:linear-gradient(118deg,#101b28 8%,#c8b7d2 33%,#617c80 42%,#08101e 51%,#a8abbf 69%,#1d293a 88%);
+ background-size:260% 260%;background-position:var(--foil-x) var(--foil-y);
+ mix-blend-mode:soft-light;opacity:.65;
+}
+.card-glare{z-index:2;opacity:calc(var(--light-presence)*var(--glare-strength));
+ background:radial-gradient(ellipse farthest-corner at var(--pointer-x) var(--pointer-y),#fff 0%,#f4f0ff80 7%,#cce5ff2e 19%,#abcde30d 32%,transparent 53%);
+ mix-blend-mode:screen;
+}
+.card-diffraction{
+ background-image:url('/textures/holo-grain.svg'),linear-gradient(128deg,#000 36%,#3b073c 42%,#125d71 46%,#90a6b0 48.5%,#d9bba3 50%,#446a4f 51.5%,#451324 54%,#0b0a19 58%,#000 64%);
+ background-size:140px 140px,280% 280%;background-position:center,var(--beam-x,50%) var(--beam-y,50%);
+ background-blend-mode:multiply;mix-blend-mode:color-dodge;filter:brightness(1.1) contrast(2.2) saturate(1.6);
+ mask-image:radial-gradient(ellipse farthest-corner at var(--pointer-x) var(--pointer-y),#000 5%,#000e 25%,#0004 62%,transparent 95%);
+}
+.card-sparkles{display:none;background-image:url('/textures/holo-grain.svg');background-size:160px 160px;background-position:var(--foil-x) var(--foil-y);mix-blend-mode:color-dodge;filter:brightness(.55) contrast(4);mask-image:radial-gradient(ellipse at var(--pointer-x) var(--pointer-y),#000 0%,#0009 20%,transparent 62%)}
+.atlas-card.rarity-0{--glare-strength:.16}
+.atlas-card.rarity-1{--glare-strength:.2}
+.atlas-card.rarity-2{--glare-strength:.26;--foil-strength:.22}
+.atlas-card.rarity-3{--glare-strength:.3;--foil-strength:.48}
+.atlas-card.rarity-3 .card-shine{filter:brightness(.95) contrast(1.4) saturate(.95)}
+.atlas-card.rarity-4{--glare-strength:.36;--foil-strength:.72}
+.atlas-card.rarity-5{--glare-strength:.4;--foil-strength:.85;filter:drop-shadow(0 0 10px #eec77955) drop-shadow(0 18px 22px #0009)}
+.atlas-card.rarity-5 .card-face{border-width:3px;box-shadow:inset 0 0 0 1px #fff1b88c}
+.atlas-card.rarity-5 .card-front{background:#253246}
+.atlas-card.rarity-5 .card-shine{filter:brightness(.98) contrast(1.65) saturate(1.8);background-size:115px 115px,260% 420%,240% 240%}
+.atlas-card.rarity-5 .card-sparkles{display:block;opacity:calc(var(--light-presence)*.36)}
+.atlas-card .card-back .card-glare{mix-blend-mode:screen;opacity:calc(var(--light-presence)*.25)}
+@media(prefers-reduced-motion:reduce){.card-shine,.card-shine:after,.card-sparkles{background-position:center}.card-shine,.card-diffraction,.card-glare,.card-sparkles{transition:none}}
