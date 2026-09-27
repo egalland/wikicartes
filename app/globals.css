@@ -105,4 +105,34 @@
 .wiki-bulk-panel{margin:22px 0;padding:18px;border:1px solid #d0ae674d;border-radius:14px;background:#d0ae670b}
 .wiki-bulk-panel h3{margin:0 0 7px;color:#ecd9aa}.wiki-bulk-panel p{margin:0 0 14px;line-height:1.5}
 .wiki-status.no_image{color:#bbb2a5;background:#ffffff10}
+/* The holographic light tracks the pointer independently of the card rotation. */
+.atlas-card .foil,.atlas-card.rarity-5 .foil{animation:none;background:none;opacity:0;transition:opacity .2s ease}
+.atlas-card.rarity-2 .foil,.atlas-card.rarity-3 .foil,.atlas-card.rarity-4 .foil,.atlas-card.rarity-5 .foil{
+  --holo-core:#fffbd3bd;--holo-halo:#9de8f376;--holo-stripe:#c3ccff48;
+  background-image:
+    radial-gradient(circle at var(--holo-x,50%) var(--holo-y,50%),var(--holo-core) 0%,var(--holo-halo) 12%,transparent 42%),
+    repeating-linear-gradient(135deg,transparent 0 9px,var(--holo-stripe) 10px 11px,transparent 12px 22px),
+    linear-gradient(115deg,transparent 8%,#f47fc045 28%,#74dff276 47%,#f5dd9470 62%,transparent 88%);
+  background-size:100% 100%,220% 220%,220% 100%;
+  background-position:center,var(--holo-x,50%) var(--holo-y,50%),var(--holo-shift,0%) center;
+  background-blend-mode:screen,soft-light,screen;
+  mix-blend-mode:screen;
+}
+.atlas-card.rarity-2 .foil{--holo-core:#fff9d47e;--holo-halo:#9bc7ff34;--holo-stripe:#b4d9f129}
+.atlas-card.rarity-3 .foil{--holo-core:#fbe9ffaf;--holo-halo:#be9ff38a;--holo-stripe:#d4adf758}
+.atlas-card.rarity-4 .foil{--holo-core:#fff9d9df;--holo-halo:#ebbc7c9a;--holo-stripe:#efdcaa79}
+.atlas-card.rarity-5 .foil{
+  --holo-core:#ffffffed;--holo-halo:#81e8f4b0;--holo-stripe:#efacff94;
+  background-image:
+    radial-gradient(circle at var(--holo-x,50%) var(--holo-y,50%),var(--holo-core) 0%,var(--holo-halo) 9%,transparent 40%),
+    repeating-linear-gradient(135deg,transparent 0 9px,var(--holo-stripe) 10px 11px,transparent 12px 22px),
+    repeating-linear-gradient(115deg,#fa82b54d 0%,#ffdf925e 12%,#bce88f63 24%,#8de6f48c 37%,#b595f18c 49%,#fa82b54d 61%);
+  background-size:100% 100%,220% 220%,240% 220%;
+  background-position:center,var(--holo-x,50%) var(--holo-y,50%),var(--holo-x,50%) var(--holo-y,50%);
+}
+.atlas-card.rarity-2:hover .foil,.atlas-card.rarity-2:active .foil,.pickable:hover .atlas-card.rarity-2 .foil{opacity:.38}
+.atlas-card.rarity-3:hover .foil,.atlas-card.rarity-3:active .foil,.pickable:hover .atlas-card.rarity-3 .foil{opacity:.54}
+.atlas-card.rarity-4:hover .foil,.atlas-card.rarity-4:active .foil,.pickable:hover .atlas-card.rarity-4 .foil{opacity:.7}
+.atlas-card.rarity-5:hover .foil,.atlas-card.rarity-5:active .foil,.pickable:hover .atlas-card.rarity-5 .foil{opacity:.86}
+@media(prefers-reduced-motion:reduce){.atlas-card .foil{background-position:center!important}.atlas-card .card-turn{transition:none}}
 @media(max-width:760px){.wiki-import-summary{grid-template-columns:repeat(2,1fr)}.wiki-import-summary span:first-child{grid-column:1/-1}.wiki-actions button,.wiki-bulk-actions button{flex:1}.wiki-import-panel .filters>*{width:100%;max-width:none!important}}
