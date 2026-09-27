@@ -30,6 +30,7 @@ async function settings(){const row=await one<{value:string}>('SELECT value FROM
 function rarity(views:number,c:Cfg){let i=0;while(i<c.thresholds.length&&views>=c.thresholds[i])i++;return Math.min(i,4)}
 const fee=(price:number,c:Cfg)=>Math.max(1,Math.ceil(price*c.listingFeePercent/100));
 const WIKI_ORIGIN='https://fr.wikipedia.org';
+function validHistoricalMonth(value:unknown){const month=String(value||'');return /^(20\d{2})-(0[1-9]|1[0-2])$/.test(month)&&month>='2015-07'&&month<new Date().toISOString().slice(0,7)}
 const normalizeWikiTitle=(value:string)=>value.trim().replace(/_/g,' ').replace(/\s+/g,' ').normalize('NFKC').toLocaleLowerCase('fr-FR');
 function safeWikiUrl(value:unknown,api=false){try{const u=new URL(String(value));return u.protocol==='https:'&&u.origin===WIKI_ORIGIN&&u.pathname.startsWith(api?'/w/api.php':'/wiki/')&&!u.username&&!u.password&&!u.hash?u.toString():null}catch{return null}}
 function stableCardId(value:string){let hash=2166136261;for(const char of value)hash=Math.imul(hash^char.charCodeAt(0),16777619);return (hash>>>0)%1900000000+100000000}
@@ -109,6 +110,15 @@ if(v==='achievements'){if(!me)return err('Connexion requise.',401);const trade=a
 if(v==='friends'){if(!me)return err('Connexion requise.',401);const rows=await q('SELECT f.requester_id,f.recipient_id,f.status,f.created_at,COALESCE(a.nickname,a.name) AS requester,COALESCE(b.nickname,b.name) AS recipient FROM friendships f JOIN users a ON a.id=f.requester_id JOIN users b ON b.id=f.recipient_id WHERE f.requester_id=? OR f.recipient_id=? ORDER BY f.created_at DESC',me.id,me.id);return ok({rows})}
 if(v==='findFriends'){if(!me)return err('Connexion requise.',401);const term=String(req.nextUrl.searchParams.get('q')||'').trim().slice(0,32);if(term.length<2)return ok({rows:[]});const rows=await q('SELECT id,nickname AS name FROM users WHERE nickname IS NOT NULL AND nickname LIKE ? AND id<>? ORDER BY nickname LIMIT 20',term.replace(/[\%_]/g,'\$&')+'%',me.id);return ok({rows})}
 if(v==='wikiImport'){if(!admin(user))return err('Accès administrateur requis.',403);const jobId=String(req.nextUrl.searchParams.get('job')||'');const page=Math.max(1,Number(req.nextUrl.searchParams.get('page'))||1),search=String(req.nextUrl.searchParams.get('q')||'').slice(0,80),sort=['views','title','enriched','pending'].includes(String(req.nextUrl.searchParams.get('sort')))?String(req.nextUrl.searchParams.get('sort')):'views';const minViews=Math.max(0,Number(req.nextUrl.searchParams.get('minViews'))||0),enrich=String(req.nextUrl.searchParams.get('enrich')||''),geo=String(req.nextUrl.searchParams.get('geo')||'');const jobs=await q('SELECT * FROM wiki_import_jobs ORDER BY updated_at DESC LIMIT 20');const active=jobId?await one('SELECT * FROM wiki_import_jobs WHERE id=?',jobId):jobs[0]||null;if(!active)return ok({jobs,job:null,rows:[],count:0});let where=' WHERE job_id=?',args:unknown[]=[active.id];if(search){where+=' AND (title LIKE ? OR id LIKE ?)';args.push('%'+search+'%','%'+search+'%')}if(minViews){where+=' AND views>=?';args.push(minViews)}if(enrich==='done'||enrich==='pending'||enrich==='error'||enrich==='no_image'){where+=' AND enrich_status=?';args.push(enrich)}if(geo==='yes')where+=' AND latitude IS NOT NULL AND longitude IS NOT NULL';if(geo==='no')where+=' AND latitude IS NULL AND longitude IS NULL';const order=sort==='title'?'title COLLATE NOCASE ASC':sort==='enriched'?'CASE WHEN enrich_status=\'done\' THEN 0 ELSE 1 END,title COLLATE NOCASE':sort==='pending'?'CASE WHEN enrich_status=\'pending\' THEN 0 ELSE 1 END,title COLLATE NOCASE':'views DESC,title COLLATE NOCASE';const count=await one<{n:number}>('SELECT COUNT(*) AS n FROM wiki_articles'+where,...args);const rows=await q('SELECT id,title,page_id AS pageId,views,period_start AS periodStart,period_end AS periodEnd,wikipedia_url AS wikipediaUrl,enrich_status AS enrichStatus,thumbnail,wikidata_id AS wikidataId,latitude,longitude,card_id AS cardId FROM wiki_articles'+where+' ORDER BY '+order+' LIMIT 50 OFFSET ?',...args,(page-1)*50);return ok({jobs,job:active,rows,count:count?.n||0,page})}
+if(v==='historicalExport'){
+ if(!admin(user))return err('Accès administrateur requis.',403);
+ const raw=req.nextUrl.searchParams.get('after')||'0',after=Number(raw);
+ if(!Number.isSafeInteger(after)||after<0)return err('Curseur invalide.');
+ const missing=req.nextUrl.searchParams.get('scope')==='missing';
+ const cards=await q<{card_id:number,title:string,wikipedia_url:string}>('SELECT id AS card_id,title,url AS wikipedia_url FROM cards WHERE retired=0 AND id>?'+(missing?' AND historical_views IS NULL':'')+' ORDER BY id LIMIT 500',after);
+ const stats=after===0?await one<{total:number,done:number}>('SELECT COUNT(*) AS total,COUNT(historical_views) AS done FROM cards WHERE retired=0'):null;
+ return ok({cards,total:stats?.total,done:stats?.done,hasMore:cards.length===500});
+}
 if(v==='adminCatalog'){if(!admin(user))return err('Accès administrateur requis.',403);const page=Math.max(1,Number(req.nextUrl.searchParams.get('page'))||1),search=String(req.nextUrl.searchParams.get('q')||'').slice(0,80);const where=search?'WHERE c.title LIKE ?':'',args=search?['%'+search+'%']:[];const rows=await q('SELECT c.id,c.title,c.family,c.category,c.views,c.image,c.draw_enabled,c.retired,(SELECT COUNT(*) FROM inventory i WHERE i.card_id=c.id AND i.status IN (\'owned\',\'listed\')) AS circulation FROM cards c '+where+' ORDER BY c.title LIMIT 50 OFFSET ?',...args,(page-1)*50);const count=await one<{n:number}>('SELECT COUNT(*) AS n FROM cards c '+where,...args);const statuses=await q<{status:string,n:number}>('SELECT status,COUNT(*) AS n FROM import_records GROUP BY status');const cursor=await one<{value:string}>('SELECT value FROM config WHERE key=?','wiki_cursor');const automatic=await one<{value:string}>('SELECT value FROM config WHERE key=?','wiki_auto');return ok({rows,count:count?.n||0,page,statuses,cursor:cursor?.value||'',automatic:automatic?.value==='1'})}
 if(v==='trades'){if(!me)return err('Connecte-toi pour consulter les échanges.',401);const rows=await q('SELECT t.*,a.title AS offered_title,b.title AS requested_title,COALESCE(p.nickname,p.name) AS proposer_name,COALESCE(r.nickname,r.name) AS recipient_name FROM trades t JOIN inventory ia ON ia.id=t.offered_inventory_id JOIN inventory ib ON ib.id=t.requested_inventory_id JOIN cards a ON a.id=ia.card_id JOIN cards b ON b.id=ib.card_id JOIN users p ON p.id=t.proposer_id JOIN users r ON r.id=t.recipient_id WHERE (t.proposer_id=? OR t.recipient_id=?) AND t.status=? ORDER BY t.created_at DESC LIMIT 50',me.id,me.id,'pending');return ok({trades:rows})}
 return err('Vue inconnue.',404)}catch(e){console.error('Atlas GET',e);return err('Le jeu est momentanément indisponible.',503)}}
@@ -124,6 +134,27 @@ async function retireOne(cardId:number,now:number){const card=await one<{id:numb
  db().prepare('UPDATE cards SET retired=1,draw_enabled=0,image=?,excerpt=? WHERE id=? AND retired=2').bind('','',card.id)
 ]);return ok({retired:true,owners:affected.length,copies:affected.reduce((n,x)=>n+x.n,0)})}catch(e){console.error('Retrait de carte',e);return err('Retrait interrompu. Relance la même action pour terminer.',503)}}
 export async function POST(req:NextRequest){try{const origin=req.headers.get('origin');if(origin&&origin!==req.nextUrl.origin)return err('Origine refusée.',403);if(!req.headers.get('content-type')?.startsWith('application/json'))return err('Format invalide.',415);const user=await getChatGPTUser();if(!user)return err('Connecte-toi pour continuer.',401);await ensure();const me=await current(user);if(!me)return err('Compte indisponible.',401);const body=await req.json() as Record<string,unknown>;const action=String(body.action||'');const cfg=await settings();const now=Date.now();
+if(action==='historicalViewsBatch'){
+ if(!admin(user))return err('Accès administrateur requis.',403);
+ const rows=body.rows;
+ if(!Array.isArray(rows)||rows.length<1||rows.length>100)return err('Lot de 1 à 100 lignes attendu.');
+ const statements:ReturnType<ReturnType<typeof db>['prepare']>[]=[];
+ const messages:string[]=[];
+ let errors=0,ignored=0;
+ for(const raw of rows){
+  if(!raw||typeof raw!=='object'||Array.isArray(raw)){errors++;continue}
+  const item=raw as Record<string,unknown>;
+  if(item.status==='error'){ignored++;continue}
+  const id=Number(item.card_id),title=String(item.title||''),views=Number(item.views_total),start=String(item.period_start||''),end=String(item.period_end||'');
+  if(!Number.isSafeInteger(id)||id<1||!title||title.length>300||!Number.isSafeInteger(views)||views<0||start!=='2015-07'||!validHistoricalMonth(end)||end<start||!['ok','no_data'].includes(String(item.status))||(item.status==='no_data'&&views!==0)){
+   errors++;if(messages.length<5)messages.push('Ligne invalide pour la carte '+String(item.card_id||'?'));continue;
+  }
+  statements.push(db().prepare('UPDATE cards SET historical_views=?,historical_start=?,historical_end=?,historical_updated_at=? WHERE id=? AND title=? AND retired=0 AND (historical_end IS NULL OR historical_end<?)').bind(views,start,end,Date.now(),id,title,end));
+ }
+ const results=statements.length?await db().batch(statements):[];
+ const updated=results.reduce((n,result)=>n+(result.meta.changes||0),0);
+ return ok({updated,skipped:statements.length-updated+ignored,errors,messages});
+}
 if(action==='wikiImportStart'){if(!admin(user))return err('Accès administrateur requis.',403);const filename=String(body.filename||'').slice(0,180),project=String(body.project||'');const start=String(body.periodStart||''),end=String(body.periodEnd||'');if(!filename||!['frwiki','fr.wikipedia','fr.wikipedia.org'].includes(project)||!/^\d{4}-?\d{2}-?\d{2}$/.test(start)||!/^\d{4}-?\d{2}-?\d{2}$/.test(end))return err('Métadonnées CSV invalides.');const id=crypto.randomUUID();await run('INSERT INTO wiki_import_jobs(id,filename,project,period_start,period_end,total_rows,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?, ?,?)',id,filename,'frwiki',start,end,Math.max(0,Number(body.totalRows)||0),'active',now,now);return ok({jobId:id})}
 if(action==='wikiImportBatch'){
  if(!admin(user))return err('Accès administrateur requis.',403);
