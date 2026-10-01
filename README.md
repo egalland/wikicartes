@@ -1,4 +1,4 @@
-# Atlas
+# WikiCartes
 
 Jeu de cartes illustrées à partir d'articles de Wikipédia en français, réalisé avec Vinext, TypeScript et D1. Le catalogue est rempli depuis l'administration ; aucun lot de cartes initiales n'est réinséré automatiquement.
 
@@ -15,8 +15,8 @@ L'import massif du catalogue d'articles Wikipédia est disponible dans l'adminis
 
 ## Vues historiques des cartes
 
-1. Dans **Administration → Vues historiques**, cliquer sur **Exporter les cartes existantes**. L'export CSV contient seulement les cartes déjà créées dans Atlas, avec leur identifiant, leur titre et leur URL Wikipédia. **Exporter les cartes à compléter** permet plus tard de traiter uniquement celles qui n'ont pas encore de cumul.
-2. Télécharger `atlas_historical_views.py` dans le même dossier que le CSV. Lancer `python atlas_historical_views.py atlas-cartes-existantes.csv` (sous Windows, `py atlas_historical_views.py atlas-cartes-existantes.csv` convient aussi). La bibliothèque standard Python suffit. Pour un essai limité : ajouter `--limit 10`.
+1. Dans **Administration → Vues historiques**, cliquer sur **Exporter les cartes existantes**. L'export CSV contient seulement les cartes déjà créées dans WikiCartes, avec leur identifiant, leur titre et leur URL Wikipédia. **Exporter les cartes à compléter** permet plus tard de traiter uniquement celles qui n'ont pas encore de cumul.
+2. Télécharger `wikicartes_historical_views.py` dans le même dossier que le CSV. Lancer `python wikicartes_historical_views.py wikicartes-cartes-existantes.csv` (sous Windows, `py wikicartes_historical_views.py wikicartes-cartes-existantes.csv` convient aussi). La bibliothèque standard Python suffit. Pour un essai limité : ajouter `--limit 10`.
 3. Le script écrit un fichier `.historique.sqlite` de reprise et un CSV `.vues-historiques.csv` à côté du fichier exporté. Il traite les mois complets de juillet 2015 au dernier mois complet, en série, respecte les demandes de ralentissement de Wikimedia et affiche le nombre traité ainsi que le temps estimé. Relancer la même commande reprend après une interruption. Conserver le CSV source et le fichier SQLite tant que le traitement n'est pas fini.
 4. Cliquer sur **Importer les vues historiques** et choisir le fichier `.vues-historiques.csv`. Les totaux sont importés par lots ; réimporter le même fichier reprend sans doubler les vues. Les données du dernier mois sont conservées séparément. La rareté reste calculée avec les vues mensuelles jusqu'à la définition de nouveaux seuils historiques.
 

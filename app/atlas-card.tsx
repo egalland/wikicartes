@@ -89,7 +89,7 @@ export default function AtlasCard({card,config,onTitle,size='normal'}:Props){
     <div className="card-corner"><span className="rarity-badge">{LABELS[rarity]}</span><span className="card-id">#{String(card.id).slice(-5)}</span></div>
     <button className="card-title" onClick={e=>{e.stopPropagation();onTitle?.()}} title="Voir les informations">{card.title}</button>
    </div>
-   <div className="card-face card-back"><div className="back-pattern"/><div className="back-emblem">A</div><span>ATLAS</span><div className="card-glare" aria-hidden="true"/></div>
+   <div className="card-face card-back"><div className="back-pattern"/><div className="back-emblem">W</div><span>WIKICARTES</span><div className="card-glare" aria-hidden="true"/></div>
   </div>
  </div>;
 }

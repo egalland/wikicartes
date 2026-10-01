@@ -4,7 +4,7 @@ async function wiki(params:Record<string,string>){
  const url=new URL('https://fr.wikipedia.org/w/api.php');
  for(const [key,value] of Object.entries({action:'query',format:'json',formatversion:'2',maxlag:'5',...params}))url.searchParams.set(key,value);
  for(let attempt=0;attempt<3;attempt++){
-  const response=await fetch(url,{headers:{'User-Agent':'AtlasCards/0.6 (https://atlas-cartes.emmanuel-galland117.chatgpt.site; catalogue éducatif, crédits Wikimedia)'},signal:AbortSignal.timeout(18000)});
+  const response=await fetch(url,{headers:{'User-Agent':'WikiCartes/0.6 (https://wikicartes.emmanuel-galland117.chatgpt.site; catalogue éducatif, crédits Wikimedia)'},signal:AbortSignal.timeout(18000)});
   if(response.status===429||response.status===503){await new Promise(resolve=>setTimeout(resolve,1200*(attempt+1)));continue}
   if(!response.ok)throw Error('Wikipédia : HTTP '+response.status);
   const data=await response.json() as any;

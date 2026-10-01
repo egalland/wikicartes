@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Calcule les vues mensuelles historiques des cartes exportées par Atlas.
+"""Calcule les vues mensuelles historiques des cartes exportées par WikiCartes.
 
-Usage : python atlas_historical_views.py atlas-cartes-existantes.csv
+Usage : python wikicartes_historical_views.py wikicartes-cartes-existantes.csv
 La sortie et le journal SQLite sont créés à côté du CSV. Relancer la même
 commande reprend le travail sans refaire les articles déjà traités.
 """
@@ -22,7 +22,7 @@ from pathlib import Path
 
 API = "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/fr.wikipedia.org/all-access"
 START = "2015-07"
-CONTACT = "https://atlas-cartes.emmanuel-galland117.chatgpt.site"
+CONTACT = "https://wikicartes.emmanuel-galland117.chatgpt.site"
 FIELDS = ("card_id", "title", "wikipedia_url", "views_total", "period_start", "period_end", "status", "error")
 
 
@@ -60,7 +60,7 @@ def read_cards(path):
     with path.open("r", encoding="utf-8-sig", newline="") as stream:
         reader = csv.DictReader(stream)
         if reader.fieldnames != ["card_id", "title", "wikipedia_url"]:
-            raise ValueError("Colonnes attendues : card_id,title,wikipedia_url (export Atlas).")
+            raise ValueError("Colonnes attendues : card_id,title,wikipedia_url (export WikiCartes).")
         cards = []
         seen = set()
         for line, row in enumerate(reader, 2):
@@ -134,7 +134,7 @@ def run(args):
     fingerprint = input_digest(source)
     checkpoint = args.checkpoint or source.with_name(source.stem + ".historique.sqlite")
     output = args.output or source.with_name(source.stem + ".vues-historiques.csv")
-    user_agent = f"AtlasHistoricalViews/1.0 ({args.contact}) Python-urllib"
+    user_agent = f"WikiCartesHistoricalViews/1.0 ({args.contact}) Python-urllib"
     connection = sqlite3.connect(checkpoint)
     try:
         connection.execute("CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
@@ -185,8 +185,8 @@ def run(args):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("input", type=Path, help="CSV exporté depuis l’administration d’Atlas")
-    parser.add_argument("--output", type=Path, help="CSV des totaux à réimporter dans Atlas")
+    parser.add_argument("input", type=Path, help="CSV exporté depuis l’administration de WikiCartes")
+    parser.add_argument("--output", type=Path, help="CSV des totaux à réimporter dans WikiCartes")
     parser.add_argument("--checkpoint", type=Path, help="Fichier SQLite de reprise")
     parser.add_argument("--start", type=month, default=START, help="Mois initial (défaut : 2015-07)")
     parser.add_argument("--end", type=month, help="Dernier mois complet (figé à la première exécution)")
