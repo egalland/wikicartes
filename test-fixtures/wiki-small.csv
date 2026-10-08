@@ -1,0 +1,5 @@
+project,page_id,title,views_period,period_start,period_end,wikipedia_url,api_url
+frwiki,12345,Paris,1850,2026-08-01,2026-08-31,https://fr.wikipedia.org/wiki/Paris,https://fr.wikipedia.org/w/api.php?action=query&pageids=12345
+frwiki,,Article sans identifiant,120,2026-08-01,2026-08-31,https://fr.wikipedia.org/wiki/Article_sans_identifiant,https://fr.wikipedia.org/w/api.php?action=query&titles=Article_sans_identifiant
+frwiki,12345,Paris,1850,2026-08-01,2026-08-31,https://fr.wikipedia.org/wiki/Paris,https://fr.wikipedia.org/w/api.php?action=query&pageids=12345
+frwiki,54321,"Lyon, commune française",420,2026-08-01,2026-08-31,https://fr.wikipedia.org/wiki/Lyon,https://fr.wikipedia.org/w/api.php?action=query&pageids=54321

@@ -1,0 +1,76 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1790435124464,
+      "tag": "0000_jazzy_joseph",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1790439116790,
+      "tag": "0001_uneven_nitro",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1790443903795,
+      "tag": "0002_burly_longshot",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1790444207080,
+      "tag": "0003_complex_slapstick",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1790459349066,
+      "tag": "0004_loving_steel_serpent",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1790459375643,
+      "tag": "0005_slim_valkyrie",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1790462191872,
+      "tag": "0006_curly_malice",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1790464242911,
+      "tag": "0007_serious_ben_grimm",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1790464583473,
+      "tag": "0008_tricky_baron_strucker",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1790509054357,
+      "tag": "0009_productive_toxin",
+      "breakpoints": true
+    }
+  ]
+}
