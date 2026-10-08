@@ -46,3 +46,11 @@ next-env.d.ts
 /work/
 *.tsbuildinfo
 /site-archive*.zip
+
+# Python caches and local databases
+__pycache__/
+*.py[cod]
+*.sqlite
+*.sqlite3
+*.db
+!.env.example
